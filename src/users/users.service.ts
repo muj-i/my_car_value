@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CreateUserDto } from './dtos/create-user.dto';
@@ -8,12 +12,17 @@ import { User } from './user.entity';
 export class UsersService {
   constructor(@InjectRepository(User) private repo: Repository<User>) {}
 
-  create(createUserDto: CreateUserDto) {
+  async create(createUserDto: CreateUserDto) {
+    const user = await this.repo.findBy({ email: createUserDto.email });
+    if (user.length > 0) {
+      throw new BadRequestException('User already exists');
+    }
+
     if (createUserDto.name === null || createUserDto.name === undefined) {
       createUserDto.name = '';
     }
-    const user = this.repo.create({ ...createUserDto });
-    return this.repo.save(user);
+    const newUser = this.repo.create({ ...createUserDto });
+    return this.repo.save(newUser);
   }
 
   async findOne(id: number): Promise<User> {
@@ -35,7 +44,7 @@ export class UsersService {
   async update(id: number, attrs: Partial<User>) {
     const user = await this.findOne(id);
     if (!user) {
-      throw new Error('User not found');
+      throw new NotFoundException('User not found');
     }
     Object.assign(user, attrs);
     return this.repo.save(user);
@@ -44,8 +53,13 @@ export class UsersService {
   async remove(id: number) {
     const user = await this.findOne(id);
     if (!user) {
-      throw new Error('User not found');
+      throw new NotFoundException('User not found');
     }
-    return this.repo.remove(user);
+    const success = await this.repo.remove(user);
+    if (!success) {
+      throw new BadRequestException('User not removed');
+    } else {
+      return { success: true, message: 'User removed' };
+    }
   }
 }
