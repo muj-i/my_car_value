@@ -13,10 +13,10 @@ export class UsersService {
   constructor(@InjectRepository(User) private repo: Repository<User>) {}
 
   async create(createUserDto: CreateUserDto) {
-    const user = await this.repo.findBy({ email: createUserDto.email });
-    if (user.length > 0) {
-      throw new BadRequestException('User already exists');
-    }
+    // const user = await this.repo.findBy({ email: createUserDto.email });
+    // if (user.length > 0) {
+    //   throw new BadRequestException('User already exists');
+    // }
 
     if (createUserDto.name === null || createUserDto.name === undefined) {
       createUserDto.name = '';
@@ -35,9 +35,9 @@ export class UsersService {
 
   async find(email: string): Promise<User[]> {
     const user = await this.repo.findBy({ email: email });
-    if (user.length === 0) {
-      throw new NotFoundException('User not found');
-    }
+    // if (user.length === 0) {
+    //   throw new NotFoundException('User not found');
+    // }
     return user;
   }
 
