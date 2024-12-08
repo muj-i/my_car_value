@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Body,
   Controller,
   Delete,
@@ -7,7 +8,7 @@ import {
   Patch,
   Post,
   Query,
-  // Session,
+  Session,
 } from '@nestjs/common';
 import { UserDto } from 'src/users/dtos/user.dto';
 import { Serialize } from '../interceptors/serialize.interceptor';
@@ -25,13 +26,23 @@ export class UsersController {
   ) {}
 
   @Post('auth/signup')
-  createUser(@Body() body: CreateUserDto) {
-    return this.authService.signup(body);
+  async createUser(@Body() body: CreateUserDto, @Session() session: any) {
+    const user = await this.authService.signup(body);
+    session.userId = user.id;
+    return user;
   }
 
   @Post('auth/signin')
-  signin(@Body() body: CreateUserDto) {
-    return this.authService.signin(body.email, body.password);
+  async signin(@Body() body: CreateUserDto, @Session() session: any) {
+    const user = await this.authService.signin(body.email, body.password);
+    session.userId = user.id;
+    return user;
+  }
+
+  @Post('auth/signout')
+  signout(@Session() session: any) {
+    session.userId = null;
+    return 'You have been signed out';
   }
 
   @Get('user/:id')
@@ -54,6 +65,13 @@ export class UsersController {
     return this.usersService.remove(parseInt(id));
   }
 
+  @Get('whoami')
+  whoAmI(@Session() session: any) {
+    if (!session.userId) {
+      throw new BadRequestException('You are not logged in');
+    }
+    return this.usersService.findOne(session.userId);
+  }
   // @Get('color/:color')
   // setColor(@Param('color') color: string, @Session() session: any) {
   //   session.color = color;

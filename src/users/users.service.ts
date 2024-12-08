@@ -26,6 +26,9 @@ export class UsersService {
   }
 
   async findOne(id: number): Promise<User> {
+    if (!id) {
+      throw new BadRequestException('ID is required');
+    }
     const user = await this.repo.findOneBy({ id });
     if (!user) {
       throw new NotFoundException(`User with ID ${id} not found`);
