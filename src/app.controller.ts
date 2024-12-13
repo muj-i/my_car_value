@@ -7,17 +7,17 @@ export class AppController {
   constructor(private readonly appService: AppService) {}
 
   @Get()
-  getHello(): string {
-    return this.appService.getHello();
+  getHeath(): string {
+    return this.appService.health();
   }
 
-  @Get('2fa/generate')
+  @Post('two-fa/generate')
   async gen() {
     return this.appService.generateTwoFaSecret();
   }
 
-  @Post('2fa/validate')
+  @Post('two-fa/validate')
   async ver(@Req() req: Request) {
-    return this.appService.validateTwoFa(req.body.sec, req.body.token);
+    return this.appService.validateTwoFa(req.body.secretKey, req.body.totp);
   }
 }

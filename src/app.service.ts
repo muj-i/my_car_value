@@ -3,24 +3,25 @@ import * as speakeasy from 'speakeasy';
 
 @Injectable()
 export class AppService {
-  getHello(): string {
-    return 'Hello World!';
+  health(): string {
+    return 'Hello world! I am good.';
   }
 
-  async generateTwoFaSecret(): Promise<string> {
+  async generateTwoFaSecret(): Promise<any> {
     const secret = speakeasy.generateSecret({ length: 20 }).base32;
     console.log('secret: ', secret);
-    return secret;
+    return { secretKey: secret };
   }
 
-  async validateTwoFa(sec: string, token: string): Promise<any> {
+  async validateTwoFa(secretKey: string, totp: string): Promise<any> {
     const isValidToken = speakeasy.totp.verify({
-      secret: sec,
+      secret: secretKey,
       encoding: 'base32',
-      token: token,
+      token: totp,
       window: 1,
+      time: 30,
     });
     console.log('isValidToken: ', isValidToken);
-    return isValidToken;
+    return { isValidate: isValidToken };
   }
 }
