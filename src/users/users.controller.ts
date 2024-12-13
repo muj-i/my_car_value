@@ -1,5 +1,4 @@
 import {
-  BadRequestException,
   Body,
   Controller,
   Delete,
@@ -13,8 +12,10 @@ import {
 import { UserDto } from 'src/users/dtos/user.dto';
 import { Serialize } from '../interceptors/serialize.interceptor';
 import { AuthService } from './auth.service';
+import { CurrentUser } from './decorators/current-user.decorator';
 import { CreateUserDto } from './dtos/create-user.dto';
 import { UpdateUserDto } from './dtos/update-user.dto';
+import { User } from './user.entity';
 import { UsersService } from './users.service';
 
 @Controller()
@@ -65,12 +66,17 @@ export class UsersController {
     return this.usersService.remove(parseInt(id));
   }
 
+  // @Get('whoami')
+  // whoAmI(@Session() session: any) {
+  //   if (!session.userId) {
+  //     throw new BadRequestException('You are not logged in');
+  //   }
+  //   return this.usersService.findOne(session.userId);
+  // }
+
   @Get('whoami')
-  whoAmI(@Session() session: any) {
-    if (!session.userId) {
-      throw new BadRequestException('You are not logged in');
-    }
-    return this.usersService.findOne(session.userId);
+  whoAmI(@CurrentUser() user: User) {
+    return user;
   }
   // @Get('color/:color')
   // setColor(@Param('color') color: string, @Session() session: any) {
